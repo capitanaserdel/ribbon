@@ -79,10 +79,10 @@ const Faqs = () => {
   }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between pb-24 md:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 md:py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 md:py-8 flex flex-col gap-5 sm:gap-6">
 
         {/* Header Breadcrumb */}
         <div className="flex flex-col gap-2">
@@ -97,18 +97,18 @@ const Faqs = () => {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-purple-950 flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-950 flex items-center gap-2.5">
                 <i className="fa-solid fa-circle-question text-amber-500"></i>
                 <span>Frequently Asked Questions & Rights</span>
               </h1>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">
-                Clear answers regarding urgent medical steps, evidence preservation, legal rights, and offline access.
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                Clear answers regarding urgent medical steps, PEP within 72h, evidence preservation, legal rights, and offline USSD access.
               </p>
             </div>
 
             <button
               onClick={toggleShowChatbot}
-              className="self-start sm:self-auto bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all"
+              className="self-start sm:self-auto bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all shadow-xs"
             >
               <i className="fa-solid fa-comments text-amber-700"></i>
               <span>Ask a Caseworker</span>
@@ -117,7 +117,7 @@ const Faqs = () => {
         </div>
 
         {/* Search Bar & Category Chips */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+        <div className="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
           <div className="relative">
             <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
             <input
@@ -125,18 +125,18 @@ const Faqs = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search questions (e.g. PEP, police report, evidence, USSD)..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pt-1 pb-0.5">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                className={`shrink-0 text-[11px] sm:text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
                   selectedCategory === cat
-                    ? 'bg-purple-900 text-white font-semibold shadow-sm'
+                    ? 'bg-purple-950 text-white font-semibold shadow-xs'
                     : 'bg-slate-100 hover:bg-slate-200 text-gray-600'
                 }`}
               >

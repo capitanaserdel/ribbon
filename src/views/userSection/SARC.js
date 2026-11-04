@@ -39,10 +39,10 @@ const SARC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between pb-24 md:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 md:py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 md:py-8 flex flex-col gap-5 sm:gap-6">
         
         {/* Header Breadcrumb & Title */}
         <div className="flex flex-col gap-2">
@@ -55,20 +55,20 @@ const SARC = () => {
             <span className="text-gray-500">One-Stop Centres (SARC)</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-purple-950 flex items-center gap-2">
-                <i className="fa-solid fa-circle-check text-purple-700"></i>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-950 flex items-center gap-2.5">
+                <i className="fa-solid fa-shield-heart text-purple-700"></i>
                 <span>One-Stop Crisis Centres (SARC)</span>
               </h1>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">
-                Verified Sexual Assault Referral Centres providing 24/7 free medical care, forensic examination, crisis counseling, and legal assistance.
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                Verified Sexual Assault Referral Centres across Nigeria providing 24/7 free medical care, forensic examination, crisis counseling, and legal assistance.
               </p>
             </div>
 
             <button
               onClick={toggleShowChatbot}
-              className="self-start sm:self-auto bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all"
+              className="self-start sm:self-auto bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all shadow-xs"
             >
               <i className="fa-solid fa-headset text-purple-700"></i>
               <span>Need Help Finding?</span>
@@ -77,59 +77,88 @@ const SARC = () => {
         </div>
 
         {/* Emergency Info Banner */}
-        <div className="bg-purple-900 text-white rounded-2xl p-4 shadow-md flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-amber-300">
-            <i className="fa-solid fa-circle-info text-lg"></i>
+        <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm flex items-start gap-3 sm:gap-4 border border-purple-800/50">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-amber-300">
+            <i className="fa-solid fa-circle-info text-xl"></i>
           </div>
-          <div className="text-xs leading-relaxed">
-            <strong className="text-amber-200 block text-sm mb-0.5">What is a One-Stop Centre / SARC?</strong>
-            A SARC provides complete trauma care in a single confidential location: immediate medical treatment & PEP (HIV prevention within 72 hours), evidence collection, psychological counseling, police reporting support, and safe shelter.
+          <div className="text-xs sm:text-sm leading-relaxed">
+            <strong className="text-amber-300 block font-bold text-sm sm:text-base mb-0.5">What is a One-Stop Centre / SARC?</strong>
+            A SARC provides integrated trauma care in a single confidential location: immediate medical treatment & PEP (HIV prevention within 72 hours), physical evidence collection, psychological counseling, police reporting support, and safe shelter.
           </div>
         </div>
 
-        {/* Fast Search & State Filter Controls */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-3">
-          {/* Keyword Search */}
-          <div className="flex-1 relative">
-            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by city, center name, or district..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+        {/* Search Bar & Quick State Chips */}
+        <div className="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Keyword Search */}
+            <div className="flex-1 relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by city, center name, or location..."
+                className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+            </div>
+
+            {/* State Dropdown */}
+            <div className="w-full sm:w-64">
+              <select
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                className="w-full py-2.5 px-3 bg-slate-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all capitalize"
               >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            )}
+                <option value="">All States / FCT</option>
+                {SARCData.map((d) => (
+                  <option key={d.state} value={d.state}>
+                    {d.state}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* State Dropdown */}
-          <div className="w-full md:w-64">
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="w-full py-2.5 px-3 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white transition-all capitalize"
+          {/* Quick Filter Chips (Horizontal scrollable on mobile) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pt-1 pb-0.5">
+            <button
+              onClick={() => setSelectedState('')}
+              className={`shrink-0 text-[11px] sm:text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                !selectedState
+                  ? 'bg-purple-950 text-white font-semibold shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-gray-600'
+              }`}
             >
-              <option value="">All States / Territories</option>
-              {SARCData.map((d) => (
-                <option key={d.state} value={d.state}>
-                  {d.state}
-                </option>
-              ))}
-            </select>
+              All States
+            </button>
+            {SARCData.map((d) => (
+              <button
+                key={d.state}
+                onClick={() => setSelectedState(d.state)}
+                className={`shrink-0 text-[11px] sm:text-xs px-3 py-1.5 rounded-full font-medium transition-all capitalize ${
+                  selectedState.toLowerCase() === d.state.toLowerCase()
+                    ? 'bg-purple-950 text-white font-semibold shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-gray-600'
+                }`}
+              >
+                {d.state}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Results Header */}
         <div className="flex items-center justify-between text-xs text-gray-500 px-1">
           <span>
-            Showing <strong>{totalCentersFound}</strong> centres in {filteredResults.length} regions
+            Showing <strong className="text-gray-900">{totalCentersFound}</strong> centres in {filteredResults.length} regions
           </span>
           {(selectedState || searchTerm) && (
             <button
@@ -137,9 +166,10 @@ const SARC = () => {
                 setSelectedState('');
                 setSearchTerm('');
               }}
-              className="text-purple-700 font-semibold hover:underline"
+              className="text-purple-700 font-semibold hover:underline flex items-center gap-1"
             >
-              Reset Filters
+              <i className="fa-solid fa-rotate-left text-[10px]"></i>
+              <span>Reset Filters</span>
             </button>
           )}
         </div>

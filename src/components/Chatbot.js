@@ -114,8 +114,8 @@ const Chatbot = ({ toggleShowChatbot }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
-      <div className="relative w-full max-w-lg h-[85vh] sm:h-[620px] bg-white sm:rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+      <div className="relative w-full max-w-lg h-[90vh] sm:h-[620px] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
         
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 flex items-center justify-between border-b border-purple-800 shadow-sm">

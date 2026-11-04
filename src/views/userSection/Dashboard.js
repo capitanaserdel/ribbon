@@ -13,12 +13,12 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between pb-24 md:pb-0">
       {/* Navbar with safe exit & hotlines */}
       <Navbar />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 md:py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 md:py-8 flex flex-col gap-6 sm:gap-8">
 
         {/* 72-Hour Medical Emergency Alert */}
         <div className="bg-gradient-to-r from-rose-50 to-amber-50 border-l-4 border-rose-500 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

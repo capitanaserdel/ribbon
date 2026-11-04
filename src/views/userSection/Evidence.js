@@ -119,10 +119,10 @@ const Evidence = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between pb-24 md:pb-0">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 md:py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 md:py-8 flex flex-col gap-5 sm:gap-6">
 
         {/* Header Breadcrumb */}
         <div className="flex flex-col gap-2">
@@ -137,11 +137,11 @@ const Evidence = () => {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-purple-950 flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-950 flex items-center gap-2.5">
                 <i className="fa-solid fa-camera-retro text-blue-600"></i>
                 <span>Document Forensic Evidence</span>
               </h1>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl leading-relaxed">
                 Securely photograph and timestamp physical injuries, scene evidence, torn clothing, or threatening messages for legal prosecution.
               </p>
             </div>
@@ -150,15 +150,15 @@ const Evidence = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsCapturing(true)}
-                className="bg-purple-900 hover:bg-purple-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                className="bg-purple-950 hover:bg-purple-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-2 active:scale-95"
               >
                 <i className="fa-solid fa-camera"></i>
                 <span>Take Photo</span>
               </button>
 
-              <label className="cursor-pointer bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2">
+              <label className="cursor-pointer bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-2 active:scale-95">
                 <i className="fa-solid fa-upload"></i>
-                <span>Upload File</span>
+                <span>Upload</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -196,8 +196,8 @@ const Evidence = () => {
 
         {/* Live Camera Modal */}
         {isCapturing && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-            <div className="relative w-full max-w-lg bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-gray-700 flex flex-col">
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-4">
+            <div className="relative w-full max-w-lg bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-gray-700 flex flex-col max-h-[92vh] overflow-y-auto">
               
               <div className="bg-gray-800 px-4 py-3 flex items-center justify-between text-white border-b border-gray-700">
                 <span className="text-sm font-semibold flex items-center gap-2">

@@ -425,14 +425,14 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="relative w-full max-w-md bg-gray-900 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden flex flex-col text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2.5 sm:p-4 animate-fade-in">
+      <div className="relative w-full max-w-sm sm:max-w-md bg-gray-900 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden flex flex-col text-white max-h-[94vh] overflow-y-auto">
         
         {/* Header bar */}
-        <div className="bg-gray-800 px-5 py-3 flex items-center justify-between border-b border-gray-700">
+        <div className="bg-gray-800 px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between border-b border-gray-700">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-sm font-semibold tracking-wide text-gray-200">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs sm:text-sm font-semibold tracking-wide text-gray-200">
               Qrios USSD Feature Phone Simulator
             </span>
           </div>
@@ -445,16 +445,16 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Integration Credentials Info */}
-        <div className="bg-purple-950/70 border-b border-purple-800/40 px-4 py-2 text-xs flex justify-between items-center text-purple-200">
+        <div className="bg-purple-950/70 border-b border-purple-800/40 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs flex justify-between items-center text-purple-200">
           <span>Shortcode: <strong className="text-emerald-400 font-mono">*425*0167#</strong></span>
           <span>Languages: <strong className="text-teal-300 font-mono">English / Hausa</strong></span>
         </div>
 
         {/* Feature Phone Body */}
-        <div className="p-5 flex flex-col items-center">
+        <div className="p-3 sm:p-5 flex flex-col items-center">
           
           {/* LCD Screen */}
-          <div className="w-full bg-[#1e293b] border-2 border-slate-600 rounded-xl p-3 shadow-inner flex flex-col min-h-[220px] max-h-[260px] overflow-hidden">
+          <div className="w-full bg-[#1e293b] border-2 border-slate-600 rounded-xl p-3 shadow-inner flex flex-col min-h-[180px] sm:min-h-[220px] max-h-[230px] sm:max-h-[260px] overflow-hidden">
             {/* Screen Top Status Bar */}
             <div className="flex justify-between items-center text-[10px] text-emerald-400 font-mono border-b border-slate-700 pb-1 mb-2">
               <span>📶 MTN/AIRTEL/GLO NIGERIA</span>
@@ -481,7 +481,7 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
                   type="text"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="Type option (1 or 2) & press Send..."
+                  placeholder="Type option & press Send..."
                   className="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-emerald-400 font-mono"
                   autoFocus
                 />
@@ -511,13 +511,13 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
 
           {/* Dial String Display (Before session starts) */}
           {!inSession && (
-            <div className="w-full flex items-center gap-2 mt-3 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2">
-              <span className="text-emerald-400 font-mono font-bold text-sm">USSD:</span>
+            <div className="w-full flex items-center gap-2 mt-2.5 bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 sm:py-2">
+              <span className="text-emerald-400 font-mono font-bold text-xs sm:text-sm">USSD:</span>
               <input
                 type="text"
                 value={dialCode}
                 onChange={(e) => setDialCode(e.target.value)}
-                className="flex-1 bg-transparent text-white font-mono text-base font-semibold focus:outline-none"
+                className="flex-1 bg-transparent text-white font-mono text-sm sm:text-base font-semibold focus:outline-none"
               />
               <button
                 onClick={backspace}
@@ -530,12 +530,12 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Phone Keypad */}
-          <div className="grid grid-cols-3 gap-2.5 w-full max-w-[280px] mt-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 w-full max-w-[260px] sm:max-w-[280px] mt-3">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((k) => (
               <button
                 key={k}
                 onClick={() => addKey(k)}
-                className="h-11 rounded-xl bg-gray-800 hover:bg-gray-700 active:bg-gray-600 border border-gray-700 text-base font-semibold font-mono shadow transition-all active:scale-95 flex items-center justify-center text-gray-200"
+                className="h-9 sm:h-11 rounded-xl bg-gray-800 hover:bg-gray-700 active:bg-gray-600 border border-gray-700 text-sm sm:text-base font-semibold font-mono shadow transition-all active:scale-95 flex items-center justify-center text-gray-200"
               >
                 {k}
               </button>
@@ -543,12 +543,12 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Primary Action Buttons */}
-          <div className="flex gap-3 w-full max-w-[280px] mt-4">
+          <div className="flex gap-2.5 w-full max-w-[260px] sm:max-w-[280px] mt-3">
             {!inSession ? (
               <button
                 onClick={handleDial}
                 disabled={isLoading}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+                className="flex-1 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
               >
                 <i className="fa-solid fa-phone"></i>
                 <span>{isLoading ? 'Dialing...' : 'Dial USSD'}</span>
@@ -556,7 +556,7 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
             ) : (
               <button
                 onClick={handleReset}
-                className="flex-1 py-3 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-semibold text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all"
+                className="flex-1 py-2.5 sm:py-3 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-semibold text-xs sm:text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all"
               >
                 <i className="fa-solid fa-phone-slash"></i>
                 <span>End Session</span>
