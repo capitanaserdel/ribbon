@@ -114,33 +114,102 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
   try {
     context = contextData ? (typeof contextData === 'string' ? JSON.parse(contextData) : contextData) : {};
   } catch (e) {
-    context = { step: 'menu' };
+    context = { step: 'lang_select' };
   }
 
-  const step = context.step || 'menu';
+  const step = context.step || 'lang_select';
   const input = (inputStr || '').trim();
+  let lang = context.lang || 'en';
 
-  // New session or reset
-  if (step === 'menu' && !input) {
+  // 1. Language Selection (Initial Screen)
+  if (!step || step === 'welcome' || step === 'lang_select' || (step === 'lang_select' && !input)) {
+    if (!input || step === 'welcome') {
+      return {
+        type: 'InputView',
+        message:
+          "Welcome to Ribbons / Barka da zuwa Ribbons:\n" +
+          "Select Language / Zabi Harshe:\n" +
+          "1. English\n" +
+          "2. Hausa\n" +
+          "3. Hindi",
+        contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
+      };
+    }
+
+    if (input === '1' || input.toLowerCase() === 'english') {
+      lang = 'en';
+    } else if (input === '2' || input.toLowerCase() === 'hausa') {
+      lang = 'ha';
+    } else if (input === '3' || input.toLowerCase() === 'hindi') {
+      lang = 'hi';
+    } else {
+      return {
+        type: 'InputView',
+        message:
+          "Invalid choice.\n" +
+          "Select Language / Zabi Harshe:\n" +
+          "1. English\n" +
+          "2. Hausa\n" +
+          "3. Hindi",
+        contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
+      };
+    }
+
+    // Display main menu in chosen language
+    let msg = "";
+    if (lang === 'ha') {
+      msg =
+        "Tallafin Gaggawa na Ribbons:\n" +
+        "1. Neman Agajin Gaggawa (SOS)\n" +
+        "2. Nemo Cibiyar SARC / Asibiti\n" +
+        "3. Nemi Tallafi\n" +
+        "4. Shigar da Rahoton Cin Zarafi\n" +
+        "5. Tambayoyi & Bayanan PEP (72h)\n" +
+        "0. Canja Harshe";
+    } else if (lang === 'hi') {
+      msg =
+        "Ribbons सहायता केंद्र:\n" +
+        "1. आपातकालीन एसओएस (SOS)\n" +
+        "2. सहायता केंद्र (SARC) खोजें\n" +
+        "3. सहायता का अनुरोध करें\n" +
+        "4. शिकायत दर्ज करें\n" +
+        "5. पूछे जाने वाले प्रश्न & 72h PEP\n" +
+        "0. भाषा बदलें";
+    } else {
+      msg =
+        "Ribbons Crisis Support:\n" +
+        "1. Immediate Emergency SOS\n" +
+        "2. Locate SARC / Health Center\n" +
+        "3. Request Assistance\n" +
+        "4. File Incident Report\n" +
+        "5. FAQs & 72h PEP Info\n" +
+        "0. Change Language";
+    }
+
     return {
       type: 'InputView',
-      message:
-        "Welcome to Ribbons GBV Crisis Support\n" +
-        "1. Immediate Emergency SOS\n" +
-        "2. Locate SARC / One-Stop Centre\n" +
-        "3. Request Multi-Sectoral Aid\n" +
-        "4. File Anonymous Incident Report\n" +
-        "5. FAQs & 72h PEP Info",
-      contextData: JSON.stringify({ step: 'main_menu', phone: customerMsisdn })
+      message: msg,
+      contextData: JSON.stringify({ step: 'main_menu', lang, phone: customerMsisdn })
     };
   }
 
-  // Handle Main Menu Selection
+  // 2. Handle Main Menu Selection
   if (step === 'main_menu') {
+    if (input === '0') {
+      return {
+        type: 'InputView',
+        message:
+          "Select Language / Zabi Harshe:\n" +
+          "1. English\n" +
+          "2. Hausa\n" +
+          "3. Hindi",
+        contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
+      };
+    }
+
     switch (input) {
       case '1':
         // Emergency SOS
-        // Auto-log high severity emergency complaint
         const sosRecord = {
           id: 'SOS-' + Date.now(),
           cat: 'health',
@@ -156,44 +225,89 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         store.complaints.unshift(sosRecord);
         saveData();
 
+        let sosMsg = "";
+        if (lang === 'ha') {
+          sosMsg =
+            `🚨 AN TURA SAKON GAGGAWA (SOS)!\n` +
+            `An sanar da masu bada agaji don: ${customerMsisdn}\n` +
+            `Layin Taimako:\n` +
+            `- Yan Sanda / Gaggawa: 112\n` +
+            `- Layin Kano: 08000-RIBBONS\n` +
+            `- Mirabel SARC: 08187215396\n` +
+            `Kada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.`;
+        } else if (lang === 'hi') {
+          sosMsg =
+            `🚨 आपातकालीन एसओएस सक्रिय!\n` +
+            `सहायता दल को सूचित कर दिया गया है: ${customerMsisdn}\n` +
+            `हेल्पलाइन: 112 / 1091\n` +
+            `सुरक्षित स्थान पर रहें, एजेंट संपर्क कर रहा है।`;
+        } else {
+          sosMsg =
+            `🚨 EMERGENCY SOS ACTIVATED!\n` +
+            `Rapid Response Alerted for: ${customerMsisdn}\n` +
+            `Direct Hotlines:\n` +
+            `- National Emergency: 112\n` +
+            `- GBV Rapid Response: 08000-RIBBONS\n` +
+            `- Mirabel SARC: 08187215396\n` +
+            `Stay safe. An agent is contacting you now.`;
+        }
+
         return {
           type: 'ShowView',
-          message:
-            "🚨 EMERGENCY SOS ACTIVATED!\n" +
-            "Caseworkers alerted for phone: " + customerMsisdn + "\n" +
-            "Direct Hotlines:\n" +
-            "- National Emergency: 112 / 767\n" +
-            "- GBV Rapid Response: 08000-RIBBONS\n" +
-            "Stay safe. An agent is calling now.",
-          contextData: JSON.stringify({ step: 'completed' })
+          message: sosMsg,
+          contextData: JSON.stringify({ step: 'completed', lang })
         };
 
       case '2':
         // Locate Centre
+        let locMsg = "";
+        if (lang === 'ha') {
+          locMsg =
+            "Zabi Jiha / Wuri:\n" +
+            "1. Kano (Asibitin Murtala)\n" +
+            "2. Kaduna (Asibitin Barau Dikko)\n" +
+            "3. Abuja (Asibitin Bwari)\n" +
+            "4. Lagos (Mirabel Centre LASUTH)\n" +
+            "0. Baya";
+        } else {
+          locMsg =
+            "Select Location:\n" +
+            "1. Kano (Murtala Mohd Specialist Hosp)\n" +
+            "2. Kaduna (Barau Dikko Teaching Hosp)\n" +
+            "3. Abuja FCT (Bwari General Hosp)\n" +
+            "4. Lagos (Mirabel Centre LASUTH)\n" +
+            "0. Back";
+        }
         return {
           type: 'InputView',
-          message:
-            "Select State/Region:\n" +
-            "1. Andaman & Nicobar\n" +
-            "2. Andhra Pradesh\n" +
-            "3. Lagos & Abuja (Nigeria)\n" +
-            "0. Back",
-          contextData: JSON.stringify({ step: 'select_state', phone: customerMsisdn })
+          message: locMsg,
+          contextData: JSON.stringify({ step: 'select_state', lang, phone: customerMsisdn })
         };
 
       case '3':
         // Request Support
+        let suppMsg = "";
+        if (lang === 'ha') {
+          suppMsg =
+            "Zabi Irin Tallafin da Kike Buqata:\n" +
+            "1. Magunguna & PEP na Gaggawa\n" +
+            "2. Shawarwari & Taimakon Hankali\n" +
+            "3. Kayan Agaji & Tsafta\n" +
+            "4. Taimakon Shari'a & Yan Sanda\n" +
+            "0. Baya";
+        } else {
+          suppMsg =
+            "Select Support Needed:\n" +
+            "1. Medical & Emergency PEP\n" +
+            "2. Psychosocial Counseling\n" +
+            "3. Emergency Supplies Kit\n" +
+            "4. Legal & Police Protection\n" +
+            "0. Back";
+        }
         return {
           type: 'InputView',
-          message:
-            "Select Type of Support Needed:\n" +
-            "1. Supplies / Food / Kit\n" +
-            "2. Medical / PEP (within 72h)\n" +
-            "3. Psychosocial Therapy\n" +
-            "4. WASH (Hygiene/Sanitation)\n" +
-            "5. Legal & Police Protection\n" +
-            "0. Back",
-          contextData: JSON.stringify({ step: 'select_support', phone: customerMsisdn })
+          message: suppMsg,
+          contextData: JSON.stringify({ step: 'select_support', lang, phone: customerMsisdn })
         };
 
       case '4':
@@ -201,9 +315,10 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         return {
           type: 'InputView',
           message:
-            "File Incident Report\n" +
-            "Enter your name (or type 'Anon' to stay anonymous):",
-          contextData: JSON.stringify({ step: 'report_name', phone: customerMsisdn })
+            lang === 'ha'
+              ? "Rahoton Cin Zarafi:\nRubuta takaitaccen bayanin abin da ya faru:"
+              : "Incident Report:\nEnter a brief description of what happened:",
+          contextData: JSON.stringify({ step: 'report_desc', lang, phone: customerMsisdn })
         };
 
       case '5':
@@ -211,17 +326,20 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         return {
           type: 'ShowView',
           message:
-            "ℹ️ 72-Hour Medical Window:\n" +
-            "If an assault occurred within 72 hours, go to a SARC or hospital immediately for PEP (prevents HIV) and Emergency Contraception.\n" +
-            "Do not shower/wash clothes before medical examination.",
-          contextData: JSON.stringify({ step: 'completed' })
+            lang === 'ha'
+              ? "ℹ️ BAYANI MAI MUHIMMANCI (AWA 72):\n- Maganin PEP na hana kamuwa da kanjamau idan an sha shi cikin awa 72.\n- Akwai maganin hana ciki na gaggawa.\n- Dukkan ayyukan SARC KYAUTA ne.\n- Kada a yi wanka kafin ganin likita.\nKira 112 ko je asibiti mafi kusa nan take."
+              : "ℹ️ 72-HOUR CRITICAL WINDOW:\n- PEP prevents HIV if taken within 72h of sexual assault.\n- Emergency contraception prevents pregnancy.\n- SARC services are 100% FREE.\n- Avoid bathing before medical exam to preserve evidence.\nCall 112 or visit nearest SARC immediately.",
+          contextData: JSON.stringify({ step: 'completed', lang })
         };
 
       default:
         return {
           type: 'InputView',
-          message: "Invalid choice.\n1. Emergency SOS\n2. Locate SARC\n3. Request Aid\n4. File Report\n5. FAQs",
-          contextData: JSON.stringify({ step: 'main_menu', phone: customerMsisdn })
+          message:
+            lang === 'ha'
+              ? "Kuskuren zabi. Zabi 1-5 ko 0 don komawa."
+              : "Invalid choice. Please choose 1-5 or 0 for back.",
+          contextData: JSON.stringify({ step: 'main_menu', lang, phone: customerMsisdn })
         };
     }
   }
