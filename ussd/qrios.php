@@ -53,7 +53,23 @@ if (!empty($data['contextData'])) {
     }
 }
 
-// Support Africa's Talking / Telco format text (e.g. "1*2*1")
+// Detect initial dial (e.g. *425*0167#, type='Dial', or shortcode string)
+$isInitialDial = false;
+if (isset($data['input']) && is_array($data['input'])) {
+    if (isset($data['input']['type']) && strtolower($data['input']['type']) === 'dial') {
+        $isInitialDial = true;
+    }
+}
+if ((str_starts_with($input, '*') && str_ends_with($input, '#')) || str_contains($input, '425')) {
+    $isInitialDial = true;
+}
+if ($isInitialDial) {
+    $context = ['step' => 'welcome'];
+    $input = '';
+}
+
+// Log incoming Qrios requests for live diagnostics
+@file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | $customerMsisdn | Input: " . json_encode($data['input'] ?? $input) . " | Raw: " . substr($rawInput, 0, 300) . "\n", FILE_APPEND);
 if (!$isJson && isset($_POST['text']) && empty($context['step'])) {
     $rawText = trim($_POST['text']);
     if ($rawText === '') {
