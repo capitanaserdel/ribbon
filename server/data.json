@@ -1,0 +1,18 @@
+{
+  "complaints": [
+    {
+      "id": "SOS-1793791471834",
+      "cat": "health",
+      "name": "Anonymous (USSD SOS)",
+      "desc": "EMERGENCY SOS triggered via USSD by +2348012345678",
+      "medium": "ussd",
+      "status": "false",
+      "severity": "Critical / High",
+      "loc": "Caller Location Pending",
+      "phone": "+2348012345678",
+      "createdAt": "2026-11-04T11:24:31.834Z"
+    }
+  ],
+  "drafts": [],
+  "sessions": {}
+}
