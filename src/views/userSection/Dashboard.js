@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Chatbot from '../../components/Chatbot';
-import UssdSimulatorModal from '../../components/UssdSimulatorModal';
 import SARCData from './data/sarcData';
 
 const Dashboard = () => {
   const [showChatbot, setShowChatbot] = useState(false);
-  const [showUssdModal, setShowUssdModal] = useState(false);
   const [selectedState, setSelectedState] = useState('Kano');
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -88,13 +86,14 @@ const Dashboard = () => {
                   <span>Emergency 112</span>
                 </a>
 
-                <button
-                  onClick={() => setShowUssdModal(true)}
+                <a
+                  href="tel:*425*0167%23"
                   className="bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold px-4 py-3 rounded-2xl text-xs sm:text-sm transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                  title="Dial *425*0167# on your phone"
                 >
-                  <i className="fa-solid fa-mobile-screen-button text-sm"></i>
-                  <span>Offline USSD (*425#)</span>
-                </button>
+                  <i className="fa-solid fa-phone text-sm"></i>
+                  <span>Dial USSD (*425*0167#)</span>
+                </a>
               </div>
 
               {/* Micro-Trust Highlights */}
@@ -363,13 +362,14 @@ const Dashboard = () => {
             </button>
 
             {/* Card 5: Offline USSD Feature Phone Access */}
-            <button
-              onClick={() => setShowUssdModal(true)}
+            <a
+              href="tel:*425*0167%23"
               className="text-left group bg-white hover:bg-teal-50/40 border border-gray-200/90 hover:border-teal-300 rounded-3xl p-6 shadow-xs hover:shadow-md card-hover transition-all flex flex-col justify-between"
+              title="Open phone dialer to call *425*0167#"
             >
               <div>
                 <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-xs">
-                  <i className="fa-solid fa-signal"></i>
+                  <i className="fa-solid fa-phone"></i>
                 </div>
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-gray-900 text-base sm:text-lg group-hover:text-teal-950">
@@ -380,14 +380,14 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
-                  Works on basic button feature phones without data or smartphones. Dial <strong>*425*0167#</strong> in English or Hausa to request emergency aid and locate SARCs offline.
+                  Works on basic button feature phones without data or smartphones. Tap here to open your phone dialer to <strong>*425*0167#</strong> to request emergency aid and locate SARCs offline.
                 </p>
               </div>
               <div className="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-teal-700">
-                <span>Test Interactive USSD Simulator</span>
-                <i className="fa-solid fa-mobile-screen transition-transform group-hover:translate-x-1"></i>
+                <span>Open Phone Dialer (*425*0167#)</span>
+                <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
               </div>
-            </button>
+            </a>
 
             {/* Card 6: Rights, Laws & FAQs */}
             <Link
@@ -591,12 +591,14 @@ const Dashboard = () => {
                 </ul>
               </div>
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                <button
-                  onClick={() => setShowUssdModal(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow"
+                <a
+                  href="tel:*425*0167%23"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow flex items-center gap-1.5"
+                  title="Open phone dialer for *425*0167#"
                 >
-                  Launch Interactive Simulator
-                </button>
+                  <i className="fa-solid fa-phone"></i>
+                  <span>Dial *425*0167# on Phone</span>
+                </a>
                 <span className="text-[10px] bg-teal-500/20 text-teal-200 px-2 py-0.5 rounded-full font-bold">Zero Internet Needed</span>
               </div>
             </div>
@@ -723,18 +725,15 @@ const Dashboard = () => {
               Caseworker Portal
             </Link>
             <span>•</span>
-            <button onClick={() => setShowUssdModal(true)} className="text-emerald-700 hover:text-emerald-800 font-bold">
-              USSD *425*0167#
-            </button>
+            <a href="tel:*425*0167%23" className="text-emerald-700 hover:text-emerald-800 font-bold" title="Open phone dialer">
+              Dial *425*0167#
+            </a>
           </div>
         </div>
       </footer>
 
       {/* Floating Anonymous Chatbot Widget */}
       {showChatbot && <Chatbot toggleShowChatbot={toggleShowChatbot} />}
-
-      {/* USSD Modal */}
-      <UssdSimulatorModal isOpen={showUssdModal} onClose={() => setShowUssdModal(false)} />
     </div>
   );
 };

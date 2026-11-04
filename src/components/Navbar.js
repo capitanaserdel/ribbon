@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../images/logo.png';
-import UssdSimulatorModal from './UssdSimulatorModal';
 
 const Navbar = () => {
   const [showOptions, setShowOptions] = useState(false);
-  const [showUssdModal, setShowUssdModal] = useState(false);
   const location = useLocation();
 
   const toggleShowOptions = () => {
@@ -93,14 +91,15 @@ const Navbar = () => {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* USSD Trigger Button */}
-            <button
-              onClick={() => setShowUssdModal(true)}
+            {/* USSD Phone Dialer Trigger */}
+            <a
+              href="tel:*425*0167%23"
               className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95"
+              title="Open phone dialer to call *425*0167#"
             >
-              <i className="fa-solid fa-mobile-screen-button"></i>
-              <span>USSD *425*0167#</span>
-            </button>
+              <i className="fa-solid fa-phone"></i>
+              <span>Dial *425*0167#</span>
+            </a>
 
             {/* Mobile Menu Toggle Button */}
             <button
@@ -134,16 +133,14 @@ const Navbar = () => {
               ))}
 
               <div className="pt-2 mt-2 border-t border-gray-100 flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    setShowOptions(false);
-                    setShowUssdModal(true);
-                  }}
+                <a
+                  href="tel:*425*0167%23"
+                  onClick={() => setShowOptions(false)}
                   className="w-full text-left px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-900 font-bold text-xs flex items-center gap-3 border border-emerald-200"
                 >
-                  <i className="fa-solid fa-mobile-screen-button w-5 text-emerald-700 text-sm"></i>
-                  <span>Launch USSD Feature Phone (*425*0167#)</span>
-                </button>
+                  <i className="fa-solid fa-phone w-5 text-emerald-700 text-sm"></i>
+                  <span>Dial USSD (*425*0167#) on Phone</span>
+                </a>
 
                 <div className="flex items-center justify-between text-xs text-gray-500 px-3 pt-1">
                   <Link to="/admin" onClick={() => setShowOptions(false)} className="hover:text-purple-900 font-medium">
@@ -182,13 +179,15 @@ const Navbar = () => {
           <span className="text-[10px] mt-0.5">SARCs</span>
         </Link>
 
-        {/* Center Accent Button for USSD */}
-        <button
-          onClick={() => setShowUssdModal(true)}
+        {/* Center Accent Button to Open Phone Dialer with USSD */}
+        <a
+          href="tel:*425*0167%23"
           className="flex flex-col items-center -mt-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white w-12 h-12 rounded-full shadow-lg items-center justify-center border-2 border-white active:scale-95 transition-transform"
+          title="Open phone dialer for *425*0167#"
         >
-          <i className="fa-solid fa-mobile-screen-button text-lg"></i>
-        </button>
+          <i className="fa-solid fa-phone text-base"></i>
+          <span className="text-[8px] font-bold mt-0.5 leading-none">USSD</span>
+        </a>
 
         <Link
           to="/locate-hospital"
@@ -210,9 +209,6 @@ const Navbar = () => {
           <span className="text-[10px] mt-0.5">Evidence</span>
         </Link>
       </nav>
-
-      {/* USSD Modal */}
-      <UssdSimulatorModal isOpen={showUssdModal} onClose={() => setShowUssdModal(false)} />
     </>
   );
 };
