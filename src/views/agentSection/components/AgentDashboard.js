@@ -397,7 +397,7 @@ const AgentDashboard = () => {
                           </Title>
                           <Title>
                             <Typography sx={{color: 'gray'}} component="h3" variant="body2">
-                              Mumbai
+                              Kano, Nigeria
                             </Typography>
                           </Title>
                           <Title>

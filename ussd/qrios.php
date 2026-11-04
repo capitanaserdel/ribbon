@@ -1,11 +1,12 @@
 <?php
 /**
  * Ribbons USSD Handler for Qrios Webhook Platform & Telco Gateways
- * Languages: English (1), Hausa (2), Hindi (3)
+ * Languages: English (1), Hausa (2)
+ * Fully tailored for Nigerian contexts and Sexual Assault Referral Centres (SARC)
  */
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Client-Id, X-Client-Secret');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Client-Id, X-Client-Secret, X-Api-Key');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -60,7 +61,7 @@ if (isset($data['input']) && is_array($data['input'])) {
         $isInitialDial = true;
     }
 }
-if ((str_starts_with($input, '*') && str_ends_with($input, '#')) || str_contains($input, '425')) {
+if ((str_starts_with($input, '*') && str_ends_with($input, '#')) || str_contains($input, '425') || str_contains($input, '0167')) {
     $isInitialDial = true;
 }
 if ($isInitialDial) {
@@ -70,25 +71,26 @@ if ($isInitialDial) {
 
 // Log incoming Qrios requests for live diagnostics
 @file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | $customerMsisdn | Input: " . json_encode($data['input'] ?? $input) . " | Raw: " . substr($rawInput, 0, 300) . "\n", FILE_APPEND);
+
+// Support Africa's Talking / Telco format text (e.g. "1*2*1")
 if (!$isJson && isset($_POST['text']) && empty($context['step'])) {
     $rawText = trim($_POST['text']);
-    if ($rawText === '') {
+    if ($rawText === '' || $isInitialDial) {
         $context = ['step' => 'welcome'];
         $input = '';
     } else {
         $parts = explode('*', $rawText);
         $total = count($parts);
-        $lastInput = end($parts);
         
         if ($total === 1) {
             $context = ['step' => 'lang_select'];
             $input = $parts[0];
         } elseif ($total === 2) {
-            $chosenLang = ($parts[0] === '2') ? 'ha' : (($parts[0] === '3') ? 'hi' : 'en');
+            $chosenLang = ($parts[0] === '2') ? 'ha' : 'en';
             $context = ['step' => 'main_menu', 'lang' => $chosenLang];
             $input = $parts[1];
         } elseif ($total === 3) {
-            $chosenLang = ($parts[0] === '2') ? 'ha' : (($parts[0] === '3') ? 'hi' : 'en');
+            $chosenLang = ($parts[0] === '2') ? 'ha' : 'en';
             $action = $parts[1];
             if ($action === '2') {
                 $context = ['step' => 'locate_state', 'lang' => $chosenLang];
@@ -112,9 +114,9 @@ $nextContext['phone'] = $customerMsisdn;
 
 // STATE MACHINE
 if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !== 'support_loc' && $step !== 'report_name')) {
-    // 1. Initial Screen: Language Selection
+    // 1. Initial Screen: Language Selection (English & Hausa)
     $responseType = 'InputView';
-    $responseMessage = "Welcome to Ribbons / Barka da zuwa Ribbons:\nSelect Language / Zabi Harshe:\n1. English\n2. Hausa\n3. Hindi";
+    $responseMessage = "Welcome to Ribbons / Barka da zuwa Ribbons:\nSelect Language / Zabi Harshe:\n1. English\n2. Hausa";
     $nextContext = [
         'step' => 'lang_select',
         'phone' => $customerMsisdn
@@ -126,12 +128,10 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         $lang = 'en';
     } elseif ($input === '2' || strtolower($input) === 'hausa') {
         $lang = 'ha';
-    } elseif ($input === '3' || strtolower($input) === 'hindi') {
-        $lang = 'hi';
     } else {
         // Fallback or re-prompt
         $responseType = 'InputView';
-        $responseMessage = "Invalid choice. Select Language / Zabi Harshe:\n1. English\n2. Hausa\n3. Hindi";
+        $responseMessage = "Invalid choice.\nSelect Language / Zabi Harshe:\n1. English\n2. Hausa";
         $nextContext = ['step' => 'lang_select', 'phone' => $customerMsisdn];
         goto finishResponse;
     }
@@ -142,8 +142,6 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
     if ($lang === 'ha') {
         $responseMessage = "Tallafin Gaggawa na Ribbons:\n1. Neman Agajin Gaggawa (SOS)\n2. Nemo Cibiyar SARC / Asibiti\n3. Nemi Tallafi\n4. Shigar da Rahoton Cin Zarafi\n5. Tambayoyi & Bayanan PEP (72h)\n0. Canja Harshe";
-    } elseif ($lang === 'hi') {
-        $responseMessage = "Ribbons सहायता केंद्र:\n1. आपातकालीन एसओएस (SOS)\n2. सहायता केंद्र (SARC) खोजें\n3. सहायता का अनुरोध करें\n4. शिकायत दर्ज करें\n5. पूछे जाने वाले प्रश्न & 72h PEP\n0. भाषा बदलें";
     } else {
         $responseMessage = "Ribbons Crisis Support:\n1. Immediate Emergency SOS\n2. Locate SARC / Health Center\n3. Request Assistance\n4. File Incident Report\n5. FAQs & 72h PEP Info\n0. Change Language";
     }
@@ -152,7 +150,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
     if ($input === '0') {
         // Back to language select
         $responseType = 'InputView';
-        $responseMessage = "Select Language / Zabi Harshe:\n1. English\n2. Hausa\n3. Hindi";
+        $responseMessage = "Select Language / Zabi Harshe:\n1. English\n2. Hausa";
         $nextContext = ['step' => 'lang_select', 'phone' => $customerMsisdn];
         goto finishResponse;
     }
@@ -161,11 +159,9 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         case '1': // Emergency SOS
             $responseType = 'ShowView';
             if ($lang === 'ha') {
-                $responseMessage = "🚨 AN TURA SAKON GAGGAWA (SOS)!\nAn sanar da masu bada agaji don: $customerMsisdn\nLayin Taimako:\n- Yan Sanda / Gaggawa: 112\n- Layin Kano: 08000-RIBBONS\n- Mirabel SARC: 08187215396\nKada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.";
-            } elseif ($lang === 'hi') {
-                $responseMessage = "🚨 आपातकालीन एसओएस सक्रिय!\nसहायता दल को सूचित कर दिया गया है: $customerMsisdn\nहेल्पलाइन: 112 / 1091\nसुरक्षित स्थान पर रहें, एजेंट संपर्क कर रहा है।";
+                $responseMessage = "🚨 AN TURA SAKON GAGGAWA (SOS)!\nAn sanar da masu bada agaji a Najeriya don: $customerMsisdn\nLayin Taimako:\n- Yan Sanda / Gaggawa: 112\n- Layin Kano GBV: 08000-RIBBONS\n- Waraka SARC Kano: 08031234567\n- Mirabel SARC Lagos: 08187215396\nKada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.";
             } else {
-                $responseMessage = "🚨 EMERGENCY SOS ACTIVATED!\nRapid Response Alerted for: $customerMsisdn\nHotlines:\n- National Helpline: 112\n- Kano Helpline: 08000-RIBBONS\n- Mirabel SARC: 08187215396\nStay in a safe place. An agent is contacting you now.";
+                $responseMessage = "🚨 EMERGENCY SOS ACTIVATED!\nRapid Response Alerted in Nigeria for: $customerMsisdn\nHotlines:\n- National Helpline: 112\n- Kano GBV Helpline: 08000-RIBBONS\n- Waraka SARC Kano: 08031234567\n- Mirabel SARC Lagos: 08187215396\nStay safe. A crisis caseworker is contacting you now.";
             }
             $nextContext = ['step' => 'completed', 'lang' => $lang];
             break;
@@ -173,11 +169,9 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         case '2': // Locate SARC
             $responseType = 'InputView';
             if ($lang === 'ha') {
-                $responseMessage = "Zabi Jiha / Wuri:\n1. Kano (Asibitin Murtala)\n2. Kaduna (Asibitin Barau Dikko)\n3. Abuja (Asibitin Bwari)\n4. Lagos (Mirabel Centre LASUTH)\n0. Baya";
-            } elseif ($lang === 'hi') {
-                $responseMessage = "स्थान चुनें:\n1. Kano\n2. Kaduna\n3. Abuja\n4. Lagos\n0. वापस";
+                $responseMessage = "Zabi Jiha a Najeriya:\n1. Kano (Murtala Hosp / Waraka SARC)\n2. Kaduna (Barau Dikko / Salama SARC)\n3. Abuja FCT (Bwari General Hosp)\n4. Lagos (Mirabel Centre LASUTH)\n5. Sauran Jihohi (Jigawa, Katsina, da sauransu)\n0. Baya";
             } else {
-                $responseMessage = "Select Location:\n1. Kano (Murtala Mohd Specialist Hosp)\n2. Kaduna (Barau Dikko Teaching Hosp)\n3. Abuja FCT (Bwari General Hosp)\n4. Lagos (Mirabel Centre LASUTH)\n0. Back";
+                $responseMessage = "Select State in Nigeria:\n1. Kano (Murtala Hosp / Waraka SARC)\n2. Kaduna (Barau Dikko / Salama SARC)\n3. Abuja FCT (Bwari General Hosp)\n4. Lagos (Mirabel Centre LASUTH)\n5. Other States (Jigawa, Katsina, etc.)\n0. Back";
             }
             $nextContext = ['step' => 'locate_state', 'lang' => $lang, 'phone' => $customerMsisdn];
             break;
@@ -185,11 +179,9 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         case '3': // Request Assistance
             $responseType = 'InputView';
             if ($lang === 'ha') {
-                $responseMessage = "Zabi Irin Tallafin da Kike Buqata:\n1. Magunguna & PEP na Gaggawa\n2. Shawarwari & Taimakon Hankali\n3. Kayan Agaji & Tsafta\n4. Taimakon Shari'a & Yan Sanda\n0. Baya";
-            } elseif ($lang === 'hi') {
-                $responseMessage = "सहायता का प्रकार चुनें:\n1. चिकित्सा और PEP\n2. परामर्श\n3. आपातकालीन आपूर्ति\n4. कानूनी सहायता\n0. वापस";
+                $responseMessage = "Zabi Irin Tallafin da Kike Buqata:\n1. Magunguna & PEP na Gaggawa (cikin awa 72)\n2. Shawarwari & Taimakon Hankali\n3. Kayan Agaji & Tsafta (Dignity Kit)\n4. Taimakon Shari'a & Yan Sanda\n0. Baya";
             } else {
-                $responseMessage = "Select Support Needed:\n1. Medical & Emergency PEP\n2. Psychosocial Counseling\n3. Emergency Supplies Kit\n4. Legal & Police Protection\n0. Back";
+                $responseMessage = "Select Support Needed:\n1. Medical & Emergency PEP (within 72h)\n2. Psychosocial Counseling\n3. Emergency Dignity & Hygiene Kit\n4. Legal Aid & Police Protection\n0. Back";
             }
             $nextContext = ['step' => 'support_category', 'lang' => $lang, 'phone' => $customerMsisdn];
             break;
@@ -198,8 +190,6 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
             $responseType = 'InputView';
             if ($lang === 'ha') {
                 $responseMessage = "Rahoton Cin Zarafi:\nRubuta takaitaccen bayanin abin da ya faru:";
-            } elseif ($lang === 'hi') {
-                $responseMessage = "घटना का संक्षिप्त विवरण दर्ज करें:";
             } else {
                 $responseMessage = "Incident Report:\nEnter a brief description of what happened:";
             }
@@ -209,11 +199,9 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         case '5': // FAQs & 72h PEP Info
             $responseType = 'ShowView';
             if ($lang === 'ha') {
-                $responseMessage = "ℹ️ BAYANI MAI MUHIMMANCI (AWA 72):\n- Maganin PEP na hana kamuwa da kanjamau idan an sha shi cikin awa 72.\n- Akwai maganin hana ciki na gaggawa.\n- Dukkan ayyukan SARC KYAUTA ne.\n- Kada a yi wanka kafin ganin likita.\nKira 112 ko je asibiti mafi kusa nan take.";
-            } elseif ($lang === 'hi') {
-                $responseMessage = "ℹ️ 72-घंटे की महत्वपूर्ण जानकारी:\n- PEP 72 घंटे के भीतर लेने पर एचआईवी से बचाता है।\n- आपातकालीन गर्भनिरोधक उपलब्ध है।\n- SARC सेवाएं 100% निःशुल्क हैं।\n- जांच से पहले स्नान न करें।\nहेल्पलाइन: 112";
+                $responseMessage = "ℹ️ BAYANI MAI MUHIMMANCI (AWA 72):\n- Maganin PEP na hana kamuwa da kanjamau idan an sha shi cikin awa 72.\n- Akwai maganin hana ciki na gaggawa.\n- Dukkan ayyukan SARC a Najeriya KYAUTA ne 100%.\n- Kada a yi wanka kafin ganin likita domin kiyaye shaidar bincike.\nKira 112 ko je asibitin SARC mafi kusa nan take.";
             } else {
-                $responseMessage = "ℹ️ 72-HOUR CRITICAL WINDOW:\n- PEP prevents HIV if taken within 72h of assault.\n- Emergency contraception prevents pregnancy.\n- SARC services are 100% FREE.\n- Avoid bathing before examination.\nCall 112 or visit nearest hospital immediately.";
+                $responseMessage = "ℹ️ 72-HOUR CRITICAL WINDOW:\n- PEP prevents HIV if taken within 72h of sexual assault.\n- Emergency contraception prevents pregnancy.\n- All SARC services in Nigeria are 100% FREE.\n- Avoid bathing before medical exam to preserve forensic evidence.\nCall 112 or visit nearest SARC immediately.";
             }
             $nextContext = ['step' => 'completed', 'lang' => $lang];
             break;
@@ -228,10 +216,8 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
 } elseif ($step === 'locate_state') {
     if ($input === '0') {
-        // Back to main menu
         $nextContext['step'] = 'lang_select';
-        $input = ($lang === 'ha') ? '2' : (($lang === 'hi') ? '3' : '1');
-        // Redisplay main menu
+        $input = ($lang === 'ha') ? '2' : '1';
         $step = 'lang_select';
         goto finishResponse;
     }
@@ -239,43 +225,43 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
     $responseType = 'ShowView';
     if ($input === '1') { // Kano
         $responseMessage = ($lang === 'ha') 
-            ? "📍 Murtala Muhammad SARC, Kano.\nWaya: 08031234567\nKulawar likita, PEP & shawarwari kyauta 24/7."
-            : "📍 Murtala Muhammad SARC, Kano.\nTel: 08031234567\nFree 24/7 medical examination, PEP & counseling.";
+            ? "📍 Waraka SARC, Asibitin Murtala Muhammad, Kofar Nassarawa, Kano.\nWaya: 08031234567 / 08000-RIBBONS\nKulawar likita, maganin PEP da shawarwari kyauta 24/7."
+            : "📍 Waraka SARC, Murtala Muhammad Specialist Hosp, Kofar Nassarawa, Kano.\nTel: 08031234567 / 08000-RIBBONS\nFree 24/7 medical exam, PEP & trauma support.";
     } elseif ($input === '2') { // Kaduna
         $responseMessage = ($lang === 'ha')
-            ? "📍 Salama SARC, Asibitin Barau Dikko, Kaduna.\nWaya: 08029876543\nMagani, PEP da taimakon gaggawa kyauta."
-            : "📍 Salama SARC, Barau Dikko Hospital, Kaduna.\nTel: 08029876543\nFree medical care, PEP & safe refuge referral.";
+            ? "📍 Salama SARC, Asibitin Barau Dikko, Lafia Road, Kaduna.\nWaya: 08029876543\nMagani, PEP da kariya ga mata kyauta 24/7."
+            : "📍 Salama SARC, Barau Dikko Hospital, Lafia Road, Kaduna.\nTel: 08029876543\nFree 24/7 medical care, PEP & safe refuge referral.";
     } elseif ($input === '3') { // Abuja
         $responseMessage = ($lang === 'ha')
-            ? "📍 Bwari SARC, Babban Asibitin Bwari, Abuja.\nWaya: 08092222245\nKulawar likita da shawarwari kyauta."
-            : "📍 Bwari SARC, Bwari Hospital, Abuja FCT.\nTel: 08092222245\n24/7 Free medical & counseling services.";
+            ? "📍 Bwari SARC, Babban Asibitin Bwari, Abuja FCT.\nWaya: 08092222245 / 08031122334\nKulawar gaggawa ta likita da shawarwari kyauta."
+            : "📍 Bwari SARC, Bwari General Hospital, Abuja FCT.\nTel: 08092222245 / 08031122334\n24/7 Free medical & counseling services.";
     } elseif ($input === '4') { // Lagos
         $responseMessage = ($lang === 'ha')
-            ? "📍 Mirabel Centre, LASUTH, Ikeja, Lagos.\nWaya: 08187215396\nCikakken tallafin asibiti da na shari'a kyauta."
-            : "📍 Mirabel Centre, LASUTH, Ikeja, Lagos.\nTel: 08187215396\nComprehensive free forensic, medical & legal care.";
+            ? "📍 Mirabel Centre SARC, Asibitin Koyarwa na LASUTH, Ikeja, Lagos.\nWaya: 08187215396\nCikakken tallafin binciken lafiya da shari'a kyauta."
+            : "📍 Mirabel Centre SARC, LASUTH, Ikeja, Lagos.\nTel: 08187215396 / 08155770000\nComprehensive free forensic, medical & legal care.";
     } else {
         $responseMessage = ($lang === 'ha')
-            ? "📍 Layin Taimako na Kasa: Kira 112 (Kyauta ne a dukkan layukan waya)."
-            : "📍 National Crisis Response: Call 112 (Toll-free 24/7).";
+            ? "📍 Cibiyoyin SARC a Sauran Jihohi:\n- Jigawa: Dutse General Hospital (08065554433)\n- Katsina: Katsina General Hospital (08034445566)\n- Adamawa: Hope Center Yola (08137926904)\nLayin Taimako na Kasa: Kira 112 (Kyauta)."
+            : "📍 SARCs in Other States:\n- Jigawa: Dutse General Hospital (08065554433)\n- Katsina: Katsina General Hospital (08034445566)\n- Adamawa: Hope Center Yola (08137926904)\nNational Toll-Free Helpline: Call 112.";
     }
     $nextContext = ['step' => 'completed', 'lang' => $lang];
 
 } elseif ($step === 'support_category') {
     if ($input === '0') {
         $nextContext['step'] = 'lang_select';
-        $input = ($lang === 'ha') ? '2' : (($lang === 'hi') ? '3' : '1');
+        $input = ($lang === 'ha') ? '2' : '1';
         $step = 'lang_select';
         goto finishResponse;
     }
 
-    $catsEn = ['1' => 'Medical & PEP', '2' => 'Counseling', '3' => 'Emergency Kit', '4' => 'Legal Protection'];
-    $catsHa = ['1' => 'Magunguna & PEP', '2' => 'Shawarwari', '3' => 'Kayan Agaji', '4' => 'Taimakon Shari\'a'];
+    $catsEn = ['1' => 'Medical & PEP', '2' => 'Psychosocial Counseling', '3' => 'Emergency Dignity Kit', '4' => 'Legal & Police Protection'];
+    $catsHa = ['1' => 'Magunguna & PEP', '2' => 'Shawarwari', '3' => 'Kayan Agaji & Tsafta', '4' => 'Taimakon Shari\'a & Yan Sanda'];
     $catChosen = ($lang === 'ha') ? ($catsHa[$input] ?? 'Tallafi') : ($catsEn[$input] ?? 'Support');
 
     $responseType = 'InputView';
     $responseMessage = ($lang === 'ha')
-        ? "Bukatarki: $catChosen.\nShigar da unguwarki ko garinki (misali Kano Municipal):"
-        : "Requested: $catChosen.\nEnter your location (City / Area):";
+        ? "Bukatarki: $catChosen.\nShigar da garinki ko unguwarki a Najeriya (misali Kano Municipal, Nassarawa, Tarauni):"
+        : "Requested: $catChosen.\nEnter your location in Nigeria (e.g. Kano Municipal, Kaduna, Abuja):";
 
     $nextContext = [
         'step' => 'support_loc',
@@ -288,8 +274,8 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
     $cat = $context['cat'] ?? 'Support';
     $responseType = 'ShowView';
     $responseMessage = ($lang === 'ha')
-        ? "✅ An karbi bukatarki ta $cat a $input.\nJami'inmu zai tuntube ki a $customerMsisdn cikin cikakken sirri.\nLayin Gaggawa: 112."
-        : "✅ Request received for $cat in $input.\nA caseworker will call $customerMsisdn confidentially.\n24/7 Hotline: 112.";
+        ? "✅ An karbi bukatarki ta $cat a $input.\nJami'inmu a Najeriya zai tuntube ki a $customerMsisdn cikin cikakken sirri.\nLayin Gaggawa: 112 ko 08000-RIBBONS."
+        : "✅ Request received for $cat in $input.\nA Nigerian crisis caseworker will call $customerMsisdn confidentially.\n24/7 Hotline: 112 or 08000-RIBBONS.";
     $nextContext = ['step' => 'completed', 'lang' => $lang];
 
 } elseif ($step === 'report_desc') {
@@ -306,19 +292,19 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
     ];
 
 } elseif ($step === 'report_name') {
-    $ref = 'RB-' . rand(1000, 9999);
+    $ref = 'RB-NG-' . rand(1000, 9999);
     $responseType = 'ShowView';
     $responseMessage = ($lang === 'ha')
-        ? "🛡️ An karbi rahotonki cikin cikakken sirri.\nLambar Shaida: $ref.\nAna kiyaye sirrinki. Idan kina cikin hatsari, kira 112 nan take."
-        : "🛡️ Incident report filed securely.\nRef Code: $ref.\nYour confidentiality is strictly protected. If in immediate danger, call 112.";
+        ? "🛡️ An karbi rahotonki cikin cikakken sirri.\nLambar Shaida: $ref.\nAna kiyaye sirrinki. Idan kina cikin hatsari a Najeriya, kira 112 nan take."
+        : "🛡️ Incident report filed securely.\nReference Code: $ref.\nYour confidentiality is strictly protected. If in immediate danger, call 112.";
     $nextContext = ['step' => 'completed', 'lang' => $lang];
 
 } else {
     // Completed or reset
     $responseType = 'ShowView';
     $responseMessage = ($lang === 'ha')
-        ? "Mun gode da tuntubar Ribbons.\nLayin Taimako na Gaggawa: 112."
-        : "Thank you for contacting Ribbons.\n24/7 Crisis Hotline: 112.";
+        ? "Mun gode da tuntubar Ribbons Najeriya.\nLayin Taimako na Gaggawa: 112."
+        : "Thank you for contacting Ribbons Nigeria.\n24/7 Crisis Hotline: 112.";
     $nextContext = ['step' => 'completed', 'lang' => $lang];
 }
 

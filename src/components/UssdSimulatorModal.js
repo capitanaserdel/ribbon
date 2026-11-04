@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-// Comprehensive USSD State Engine (supports English, Hausa, and Hindi)
+// Comprehensive USSD State Engine (Strictly English & Hausa with Nigerian Context)
 const processUssdState = (step, inputRaw, context = {}) => {
   const input = (inputRaw || '').trim();
   const phone = context.phone || '+2348012345678';
   let lang = context.lang || 'en';
 
-  // 1. Initial State: Language Selection
+  // 1. Initial State: Language Selection (English or Hausa)
   if (!step || step === 'welcome' || step === 'lang_select') {
     if (!input || step === 'welcome') {
       return {
@@ -15,8 +15,7 @@ const processUssdState = (step, inputRaw, context = {}) => {
           "Welcome to Ribbons / Barka da zuwa Ribbons:\n" +
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         context: { step: 'lang_select', phone }
       };
     }
@@ -26,8 +25,6 @@ const processUssdState = (step, inputRaw, context = {}) => {
       lang = 'en';
     } else if (input === '2' || input.toLowerCase() === 'hausa') {
       lang = 'ha';
-    } else if (input === '3' || input.toLowerCase() === 'hindi') {
-      lang = 'hi';
     } else {
       return {
         type: 'InputView',
@@ -35,8 +32,7 @@ const processUssdState = (step, inputRaw, context = {}) => {
           "Invalid choice.\n" +
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         context: { step: 'lang_select', phone }
       };
     }
@@ -53,19 +49,6 @@ const processUssdState = (step, inputRaw, context = {}) => {
           "4. Shigar da Rahoton Cin Zarafi\n" +
           "5. Tambayoyi & Bayanan PEP (72h)\n" +
           "0. Canja Harshe",
-        context: { step: 'main_menu', lang, phone }
-      };
-    } else if (lang === 'hi') {
-      return {
-        type: 'InputView',
-        message:
-          "Ribbons सहायता केंद्र:\n" +
-          "1. आपातकालीन एसओएस (SOS)\n" +
-          "2. सहायता केंद्र (SARC) खोजें\n" +
-          "3. सहायता का अनुरोध करें\n" +
-          "4. शिकायत दर्ज करें\n" +
-          "5. पूछे जाने वाले प्रश्न & 72h PEP\n" +
-          "0. भाषा बदलें",
         context: { step: 'main_menu', lang, phone }
       };
     } else {
@@ -93,8 +76,7 @@ const processUssdState = (step, inputRaw, context = {}) => {
         message:
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         context: { step: 'lang_select', phone }
       };
     }
@@ -105,51 +87,47 @@ const processUssdState = (step, inputRaw, context = {}) => {
       if (lang === 'ha') {
         msg =
           `🚨 AN TURA SAKON GAGGAWA (SOS)!\n` +
-          `An sanar da masu bada agaji don: ${phone}\n` +
+          `An sanar da masu bada agaji a Najeriya don: ${phone}\n` +
           `Layin Taimako:\n` +
           `- Yan Sanda / Gaggawa: 112\n` +
-          `- Layin Kano: 08000-RIBBONS\n` +
-          `- Mirabel SARC: 08187215396\n` +
+          `- Layin Kano GBV: 08000-RIBBONS\n` +
+          `- Waraka SARC Kano: 08031234567\n` +
+          `- Mirabel SARC Lagos: 08187215396\n` +
           `Kada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.`;
-      } else if (lang === 'hi') {
-        msg =
-          `🚨 आपातकालीन एसओएस सक्रिय!\n` +
-          `सहायता दल को सूचित कर दिया गया है: ${phone}\n` +
-          `हेल्पलाइन: 112 / 1091\n` +
-          `सुरक्षित स्थान पर रहें, एजेंट संपर्क कर रहा है।`;
       } else {
         msg =
           `🚨 EMERGENCY SOS ACTIVATED!\n` +
-          `Rapid Response Alerted for: ${phone}\n` +
+          `Rapid Response Alerted in Nigeria for: ${phone}\n` +
           `Hotlines:\n` +
           `- National Helpline: 112\n` +
           `- Kano GBV Helpline: 08000-RIBBONS\n` +
-          `- Mirabel SARC: 08187215396\n` +
-          `Stay in a safe place. An agent is contacting you now.`;
+          `- Waraka SARC Kano: 08031234567\n` +
+          `- Mirabel SARC Lagos: 08187215396\n` +
+          `Stay safe. A caseworker is reaching out to you immediately.`;
       }
       return { type: 'ShowView', message: msg, context: { step: 'completed', lang } };
     }
 
     if (input === '2') {
-      // Locate Center
+      // Locate Center across Nigeria
       let msg = "";
       if (lang === 'ha') {
         msg =
-          "Zabi Jiha / Wuri:\n" +
-          "1. Kano (Asibitin Murtala)\n" +
-          "2. Kaduna (Asibitin Barau Dikko)\n" +
-          "3. Abuja (Asibitin Bwari)\n" +
+          "Zabi Jiha / Wuri a Najeriya:\n" +
+          "1. Kano (Asibitin Murtala / Waraka SARC)\n" +
+          "2. Kaduna (Barau Dikko / Salama SARC)\n" +
+          "3. Abuja FCT (Bwari Hospital SARC)\n" +
           "4. Lagos (Mirabel Centre LASUTH)\n" +
+          "5. Sauran Jihohi (Jigawa, Katsina, da sauransu)\n" +
           "0. Baya";
-      } else if (lang === 'hi') {
-        msg = "स्थान चुनें:\n1. Kano\n2. Kaduna\n3. Abuja\n4. Lagos\n0. वापस";
       } else {
         msg =
-          "Select Location:\n" +
-          "1. Kano (Murtala Mohd Specialist Hosp)\n" +
-          "2. Kaduna (Barau Dikko Teaching Hosp)\n" +
+          "Select State in Nigeria:\n" +
+          "1. Kano (Murtala Hosp / Waraka SARC)\n" +
+          "2. Kaduna (Barau Dikko / Salama SARC)\n" +
           "3. Abuja FCT (Bwari General Hosp)\n" +
           "4. Lagos (Mirabel Centre LASUTH)\n" +
+          "5. Other States (Jigawa, Katsina, etc.)\n" +
           "0. Back";
       }
       return { type: 'InputView', message: msg, context: { step: 'locate_state', lang, phone } };
@@ -161,26 +139,18 @@ const processUssdState = (step, inputRaw, context = {}) => {
       if (lang === 'ha') {
         msg =
           "Zabi Irin Tallafin da Kike Buqata:\n" +
-          "1. Magunguna & PEP na Gaggawa\n" +
+          "1. Magunguna & PEP na Gaggawa (cikin awa 72)\n" +
           "2. Shawarwari & Taimakon Hankali\n" +
-          "3. Kayan Agaji & Tsafta\n" +
-          "4. Taimakon Shari'a & Yan Sanda\n" +
+          "3. Kayan Agaji & Tsafta (Dignity Kit)\n" +
+          "4. Taimakon Shari'a & Kariya ta Yan Sanda\n" +
           "0. Baya";
-      } else if (lang === 'hi') {
-        msg =
-          "सहायता का प्रकार चुनें:\n" +
-          "1. चिकित्सा और PEP\n" +
-          "2. परामर्श\n" +
-          "3. आपातकालीन आपूर्ति\n" +
-          "4. कानूनी सहायता\n" +
-          "0. वापस";
       } else {
         msg =
           "Select Support Needed:\n" +
-          "1. Medical & Emergency PEP\n" +
+          "1. Medical & Emergency PEP (within 72h)\n" +
           "2. Psychosocial Counseling\n" +
-          "3. Emergency Supplies Kit\n" +
-          "4. Legal & Police Protection\n" +
+          "3. Emergency Dignity & Hygiene Kit\n" +
+          "4. Legal Aid & Police Protection\n" +
           "0. Back";
       }
       return { type: 'InputView', message: msg, context: { step: 'support_category', lang, phone } };
@@ -203,16 +173,16 @@ const processUssdState = (step, inputRaw, context = {}) => {
           "ℹ️ BAYANI MAI MUHIMMANCI (AWA 72):\n" +
           "- Maganin PEP na hana kamuwa da kanjamau idan an sha shi cikin awa 72.\n" +
           "- Akwai maganin hana ciki na gaggawa.\n" +
-          "- Dukkan ayyukan SARC KYAUTA ne.\n" +
-          "- Kada a yi wanka kafin ganin likita.\n" +
-          "Kira 112 ko je asibiti mafi kusa nan take.";
+          "- Dukkan ayyukan SARC a Najeriya KYAUTA ne 100%.\n" +
+          "- Kada a yi wanka kafin ganin likita domin kiyaye shaidar bincike.\n" +
+          "Kira 112 ko je asibitin SARC mafi kusa nan take.";
       } else {
         msg =
           "ℹ️ 72-HOUR CRITICAL WINDOW:\n" +
           "- PEP prevents HIV if taken within 72h of sexual assault.\n" +
           "- Emergency contraception prevents pregnancy.\n" +
-          "- SARC services are 100% FREE.\n" +
-          "- Avoid bathing before medical exam to preserve evidence.\n" +
+          "- All SARC services across Nigeria are 100% FREE.\n" +
+          "- Avoid bathing before medical exam to preserve forensic evidence.\n" +
           "Call 112 or visit nearest SARC immediately.";
       }
       return { type: 'ShowView', message: msg, context: { step: 'completed', lang } };
@@ -230,7 +200,7 @@ const processUssdState = (step, inputRaw, context = {}) => {
     };
   }
 
-  // 3. Locate State Center
+  // 3. Locate State Center in Nigeria
   if (step === 'locate_state') {
     if (input === '0') {
       return processUssdState('lang_select', lang === 'ha' ? '2' : '1', { phone });
@@ -239,28 +209,28 @@ const processUssdState = (step, inputRaw, context = {}) => {
     if (input === '1') {
       msg =
         lang === 'ha'
-          ? "📍 Murtala Muhammad SARC, Kano.\nWaya: 08031234567\nKulawar likita, PEP & shawarwari kyauta 24/7."
-          : "📍 Murtala Muhammad SARC, Kano.\nTel: 08031234567\nFree 24/7 medical examination, PEP & counseling.";
+          ? "📍 Waraka SARC, Asibitin Murtala Muhammad, Kofar Nassarawa, Kano.\nWaya: 08031234567 / 08000-RIBBONS\nKulawar likita, maganin PEP da shawarwari kyauta 24/7."
+          : "📍 Waraka SARC, Murtala Muhammad Specialist Hosp, Kofar Nassarawa, Kano.\nTel: 08031234567 / 08000-RIBBONS\nFree 24/7 medical exam, PEP & trauma support.";
     } else if (input === '2') {
       msg =
         lang === 'ha'
-          ? "📍 Salama SARC, Asibitin Barau Dikko, Kaduna.\nWaya: 08029876543\nMagani, PEP da taimakon gaggawa kyauta."
-          : "📍 Salama SARC, Barau Dikko Hospital, Kaduna.\nTel: 08029876543\nFree medical care, PEP & safe refuge referral.";
+          ? "📍 Salama SARC, Asibitin Barau Dikko, Lafia Road, Kaduna.\nWaya: 08029876543\nMagani, PEP da kariya ga mata kyauta 24/7."
+          : "📍 Salama SARC, Barau Dikko Hospital, Lafia Road, Kaduna.\nTel: 08029876543\nFree 24/7 medical care, PEP & safe refuge referral.";
     } else if (input === '3') {
       msg =
         lang === 'ha'
-          ? "📍 Bwari SARC, Babban Asibitin Bwari, Abuja.\nWaya: 08092222245\nKulawar likita da shawarwari kyauta."
-          : "📍 Bwari SARC, Bwari Hospital, Abuja FCT.\nTel: 08092222245\n24/7 Free medical & counseling services.";
+          ? "📍 Bwari SARC, Babban Asibitin Bwari, Abuja FCT.\nWaya: 08092222245 / 08031122334\nKulawar gaggawa ta likita da shawarwari kyauta."
+          : "📍 Bwari SARC, Bwari General Hospital, Abuja FCT.\nTel: 08092222245 / 08031122334\n24/7 Free medical & counseling services.";
     } else if (input === '4') {
       msg =
         lang === 'ha'
-          ? "📍 Mirabel Centre, LASUTH, Ikeja, Lagos.\nWaya: 08187215396\nCikakken tallafin asibiti da na shari'a kyauta."
-          : "📍 Mirabel Centre, LASUTH, Ikeja, Lagos.\nTel: 08187215396\nComprehensive free forensic, medical & legal care.";
+          ? "📍 Mirabel Centre SARC, Asibitin Koyarwa na LASUTH, Ikeja, Lagos.\nWaya: 08187215396\nCikakken tallafin binciken lafiya da shari'a kyauta."
+          : "📍 Mirabel Centre SARC, LASUTH, Ikeja, Lagos.\nTel: 08187215396 / 08155770000\nComprehensive free forensic, medical & legal care.";
     } else {
       msg =
         lang === 'ha'
-          ? "📍 Layin Taimako na Kasa: Kira 112 (Kyauta ne a dukkan layukan waya)."
-          : "📍 National Crisis Response: Call 112 (Toll-free 24/7).";
+          ? "📍 Cibiyoyin SARC a Sauran Jihohi:\n- Jigawa: Dutse General Hospital (08065554433)\n- Katsina: Katsina General Hospital (08034445566)\n- Adamawa: Hope Center Yola (08137926904)\nLayin Taimako na Kasa: Kira 112 (Kyauta)."
+          : "📍 SARCs in Other States:\n- Jigawa: Dutse General Hospital (08065554433)\n- Katsina: Katsina General Hospital (08034445566)\n- Adamawa: Hope Center Yola (08137926904)\nNational Toll-Free Helpline: Call 112.";
     }
     return { type: 'ShowView', message: msg, context: { step: 'completed', lang } };
   }
@@ -270,14 +240,14 @@ const processUssdState = (step, inputRaw, context = {}) => {
     if (input === '0') {
       return processUssdState('lang_select', lang === 'ha' ? '2' : '1', { phone });
     }
-    const catMapEn = { '1': 'Medical & PEP', '2': 'Counseling', '3': 'Emergency Kit', '4': 'Legal Protection' };
-    const catMapHa = { '1': 'Magunguna & PEP', '2': 'Shawarwari', '3': 'Kayan Agaji', '4': 'Taimakon Shari\'a' };
+    const catMapEn = { '1': 'Medical & PEP', '2': 'Psychosocial Counseling', '3': 'Emergency Dignity Kit', '4': 'Legal & Police Protection' };
+    const catMapHa = { '1': 'Magunguna & PEP', '2': 'Shawarwari', '3': 'Kayan Agaji & Tsafta', '4': 'Taimakon Shari\'a & Yan Sanda' };
     const chosenCat = lang === 'ha' ? (catMapHa[input] || 'Tallafi') : (catMapEn[input] || 'Support');
 
     const msg =
       lang === 'ha'
-        ? `Bukatarki: ${chosenCat}.\nShigar da unguwarki ko garinki (misali Kano Municipal):`
-        : `Requested: ${chosenCat}.\nEnter your location (City / Area):`;
+        ? `Bukatarki: ${chosenCat}.\nShigar da garinki ko unguwarki (misali Kano Municipal, Nassarawa, Tarauni):`
+        : `Requested: ${chosenCat}.\nEnter your location in Nigeria (e.g. Kano Municipal, Kaduna, Abuja):`;
 
     return {
       type: 'InputView',
@@ -291,8 +261,8 @@ const processUssdState = (step, inputRaw, context = {}) => {
     const cat = context.cat || 'Support';
     const msg =
       lang === 'ha'
-        ? `✅ An karbi bukatarki ta ${cat} a ${input}.\nJami'inmu zai tuntube ki a ${phone} cikin cikakken sirri.\nLayin Gaggawa: 112.`
-        : `✅ Request received for ${cat} in ${input}.\nA caseworker will call ${phone} confidentially.\n24/7 Hotline: 112.`;
+        ? `✅ An karbi bukatarki ta ${cat} a ${input}.\nJami'inmu a Najeriya zai tuntube ki a ${phone} cikin cikakken sirri.\nLayin Gaggawa: 112 ko 08000-RIBBONS.`
+        : `✅ Request received for ${cat} in ${input}.\nA Nigerian crisis caseworker will call ${phone} confidentially.\n24/7 Hotline: 112 or 08000-RIBBONS.`;
     return { type: 'ShowView', message: msg, context: { step: 'completed', lang } };
   }
 
@@ -311,11 +281,11 @@ const processUssdState = (step, inputRaw, context = {}) => {
 
   // 7. Incident Report Name
   if (step === 'report_name') {
-    const ref = 'RB-' + Math.floor(1000 + Math.random() * 9000);
+    const ref = 'RB-NG-' + Math.floor(1000 + Math.random() * 9000);
     const msg =
       lang === 'ha'
-        ? `🛡️ An karbi rahotonki cikin cikakken sirri.\nLambar Shaida: ${ref}.\nAna kiyaye sirrinki. Idan kina cikin hatsari, kira 112 nan take.`
-        : `🛡️ Incident report filed securely.\nRef Code: ${ref}.\nYour confidentiality is strictly protected. If in immediate danger, call 112.`;
+        ? `🛡️ An karbi rahotonki cikin cikakken sirri.\nLambar Shaida: ${ref}.\nAna kiyaye sirrinki. Idan kina cikin hatsari a Najeriya, kira 112 nan take.`
+        : `🛡️ Incident report filed securely.\nReference Code: ${ref}.\nYour confidentiality is strictly protected. If in immediate danger, call 112.`;
     return { type: 'ShowView', message: msg, context: { step: 'completed', lang } };
   }
 
@@ -324,14 +294,14 @@ const processUssdState = (step, inputRaw, context = {}) => {
     type: 'ShowView',
     message:
       lang === 'ha'
-        ? "Mun gode da tuntubar Ribbons.\nLayin Gaggawa: 112."
-        : "Thank you for contacting Ribbons.\n24/7 Helpline: 112.",
+        ? "Mun gode da tuntubar Ribbons Najeriya.\nLayin Gaggawa: 112."
+        : "Thank you for contacting Ribbons Nigeria.\n24/7 Helpline: 112.",
     context: { step: 'completed', lang }
   };
 };
 
 const UssdSimulatorModal = ({ isOpen, onClose }) => {
-  const [dialCode, setDialCode] = useState('*425#');
+  const [dialCode, setDialCode] = useState('*425*0167#');
   const [inSession, setInSession] = useState(false);
   const [screenText, setScreenText] = useState('');
   const [userInput, setUserInput] = useState('');
@@ -476,8 +446,8 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
 
         {/* Integration Credentials Info */}
         <div className="bg-purple-950/70 border-b border-purple-800/40 px-4 py-2 text-xs flex justify-between items-center text-purple-200">
-          <span>Qrios Client ID: <strong className="text-amber-300 font-mono">ORHu1n1k</strong></span>
-          <span>Languages: <strong className="text-teal-300 font-mono">EN / Hausa / HI</strong></span>
+          <span>Shortcode: <strong className="text-emerald-400 font-mono">*425*0167#</strong></span>
+          <span>Languages: <strong className="text-teal-300 font-mono">English / Hausa</strong></span>
         </div>
 
         {/* Feature Phone Body */}
@@ -487,7 +457,7 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
           <div className="w-full bg-[#1e293b] border-2 border-slate-600 rounded-xl p-3 shadow-inner flex flex-col min-h-[220px] max-h-[260px] overflow-hidden">
             {/* Screen Top Status Bar */}
             <div className="flex justify-between items-center text-[10px] text-emerald-400 font-mono border-b border-slate-700 pb-1 mb-2">
-              <span>📶 QRIOS NETWORK (2G/3G)</span>
+              <span>📶 MTN/AIRTEL/GLO NIGERIA</span>
               <span>🔋 98%</span>
             </div>
 
@@ -497,7 +467,7 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
                 <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
                   <i className="fa-solid fa-phone text-2xl mb-2 text-emerald-400/80"></i>
                   <p className="text-slate-300 font-medium">Ready to dial USSD</p>
-                  <p className="text-[11px] text-slate-500 mt-1">Dial *425# to launch Ribbons offline service</p>
+                  <p className="text-[11px] text-slate-500 mt-1">Dial *425*0167# to launch Ribbons crisis helpline</p>
                 </div>
               ) : (
                 <div>{screenText}</div>
@@ -511,7 +481,7 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
                   type="text"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="Type option (1-3) & press Send..."
+                  placeholder="Type option (1 or 2) & press Send..."
                   className="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-emerald-400 font-mono"
                   autoFocus
                 />
@@ -597,16 +567,8 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
 
         {/* Footer info & Qrios portal link */}
         <div className="bg-gray-800/90 px-5 py-3 border-t border-gray-700 flex justify-between items-center text-xs text-gray-400">
-          <span>Target Code: <code className="text-emerald-400">*425#</code></span>
-          <a
-            href="https://deep.qrios.com/portal/dashboard"
-            target="_blank"
-            rel="noreferrer"
-            className="text-purple-300 hover:text-purple-100 flex items-center gap-1 underline underline-offset-2"
-          >
-            <span>Qrios Portal</span>
-            <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-          </a>
+          <span>Shortcode: <code className="text-emerald-400">*425*0167#</code></span>
+          <span className="text-slate-400">Nigeria Toll-Free: <strong className="text-amber-300">112</strong></span>
         </div>
 
       </div>

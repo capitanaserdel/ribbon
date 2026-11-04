@@ -243,7 +243,7 @@ const AdminLogin = () => {
                             required
                             fullWidth
                             name="location"
-                            label="Location (Eg. Mumbai, India)"
+                            label="Location (Eg. Kano, Nigeria)"
                             id="location"
                             autoComplete="location"
                         />

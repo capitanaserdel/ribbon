@@ -70,44 +70,49 @@ app.use((req, res, next) => {
   next();
 });
 
-// SARC and Crisis Data for USSD Navigation
+// SARC and Crisis Data for USSD Navigation in Nigeria
 const USSD_CENTRES = {
   '1': {
-    name: 'Andaman & Nicobar',
+    name: 'Kano State',
     districts: {
-      '1': { name: 'Nicobars', center: 'One Stop Centre, Perka, Car Nicobar', phone: '03193-265121' },
-      '2': { name: 'North & Middle Andaman', center: 'One Stop Centre, Mayabunder', phone: '03192-273009' },
-      '3': { name: 'South Andaman', center: 'One Stop Centre, Junglighat, Port Blair', phone: '0319-2230504' }
+      '1': { name: 'Waraka SARC', center: 'Murtala Muhammad Specialist Hospital, Kofar Nassarawa', phone: '08031234567' },
+      '2': { name: 'Sir Sunusi SARC', center: 'Sir Sunusi Hospital, Yan Kaba, Hadejia Road', phone: '08039876543' },
+      '3': { name: 'Wudil SARC', center: 'Wudil General Hospital, Maiduguri Road', phone: '08021114455' }
     }
   },
   '2': {
-    name: 'Andhra Pradesh',
+    name: 'Kaduna State',
     districts: {
-      '1': { name: 'Krishna', center: 'One Stop Centre, Vijayawada City', phone: '9398914772' },
-      '2': { name: 'Chittoor', center: 'One Stop Centre, RIMS Hospital, Chittoor', phone: '9959776697' },
-      '3': { name: 'Srikakulam', center: 'One Stop Centre, Balaga, Srikakulam', phone: '9951909222' }
+      '1': { name: 'Salama SARC (Barau Dikko)', center: 'Barau Dikko Teaching Hospital, Lafia Road', phone: '08029876543' },
+      '2': { name: 'Salama SARC (Tudun Wada)', center: 'Yusuf Dantsoho Memorial Hospital', phone: '08021112233' },
+      '3': { name: 'Salama SARC (Zaria)', center: 'Hajiya Gambo Sawaba Hospital, Kofan Gayan', phone: '08036001234' }
     }
   },
   '3': {
-    name: 'Lagos & Abuja (Nigeria)',
+    name: 'Abuja FCT',
     districts: {
-      '1': { name: 'Mirabel SARC (Lagos)', center: 'LASUTH, Ikeja, Lagos', phone: '08187215396' },
-      '2': { name: 'Cece Yara (Lagos)', center: 'Maryland, Ikeja, Lagos', phone: '07007007001' },
-      '3': { name: 'Bwari SARC (Abuja)', center: 'Bwari General Hospital, Abuja', phone: '08092222245' }
+      '1': { name: 'Bwari SARC', center: 'Bwari General Hospital, Bwari Town', phone: '08092222245' },
+      '2': { name: 'National Trauma SARC', center: 'National Hospital Abuja, Garki', phone: '08031230000' }
+    }
+  },
+  '4': {
+    name: 'Lagos State',
+    districts: {
+      '1': { name: 'Mirabel Centre SARC', center: 'LASUTH, 1-5 Oba Akinjobi Way, Ikeja', phone: '08187215396' },
+      '2': { name: 'Alimosho SARC', center: 'Alimosho General Hospital, Igando', phone: '08033221100' }
     }
   }
 };
 
 const SUPPORT_CATEGORIES = {
-  '1': 'Supplies / Emergency Kit',
-  '2': 'Health / PEP & Medical Examination',
-  '3': 'Psychosocial Counseling & Trauma Support',
-  '4': 'WASH (Hygiene & Sanitation)',
-  '5': 'Legal Aid & Police Representation'
+  '1': 'Medical / PEP (within 72h)',
+  '2': 'Psychosocial Counseling & Trauma Therapy',
+  '3': 'Emergency Dignity & Hygiene Kit',
+  '4': 'Legal Aid & Police Representation'
 };
 
 /**
- * Core USSD Session State Machine (Qrios Format)
+ * Core USSD Session State Machine (Qrios Format) - English & Hausa
  */
 function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
   let context = {};
@@ -121,7 +126,7 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
   const input = (inputStr || '').trim();
   let lang = context.lang || 'en';
 
-  // 1. Language Selection (Initial Screen)
+  // 1. Language Selection (English or Hausa)
   if (!step || step === 'welcome' || step === 'lang_select' || (step === 'lang_select' && !input)) {
     if (!input || step === 'welcome') {
       return {
@@ -130,8 +135,7 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
           "Welcome to Ribbons / Barka da zuwa Ribbons:\n" +
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
       };
     }
@@ -140,8 +144,6 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
       lang = 'en';
     } else if (input === '2' || input.toLowerCase() === 'hausa') {
       lang = 'ha';
-    } else if (input === '3' || input.toLowerCase() === 'hindi') {
-      lang = 'hi';
     } else {
       return {
         type: 'InputView',
@@ -149,8 +151,7 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
           "Invalid choice.\n" +
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
       };
     }
@@ -166,15 +167,6 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         "4. Shigar da Rahoton Cin Zarafi\n" +
         "5. Tambayoyi & Bayanan PEP (72h)\n" +
         "0. Canja Harshe";
-    } else if (lang === 'hi') {
-      msg =
-        "Ribbons सहायता केंद्र:\n" +
-        "1. आपातकालीन एसओएस (SOS)\n" +
-        "2. सहायता केंद्र (SARC) खोजें\n" +
-        "3. सहायता का अनुरोध करें\n" +
-        "4. शिकायत दर्ज करें\n" +
-        "5. पूछे जाने वाले प्रश्न & 72h PEP\n" +
-        "0. भाषा बदलें";
     } else {
       msg =
         "Ribbons Crisis Support:\n" +
@@ -201,8 +193,7 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         message:
           "Select Language / Zabi Harshe:\n" +
           "1. English\n" +
-          "2. Hausa\n" +
-          "3. Hindi",
+          "2. Hausa",
         contextData: JSON.stringify({ step: 'lang_select', phone: customerMsisdn })
       };
     }
@@ -211,14 +202,14 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
       case '1':
         // Emergency SOS
         const sosRecord = {
-          id: 'SOS-' + Date.now(),
+          id: 'SOS-NG-' + Date.now(),
           cat: 'health',
           name: 'Anonymous (USSD SOS)',
-          desc: 'EMERGENCY SOS triggered via USSD by ' + customerMsisdn,
+          desc: 'EMERGENCY SOS triggered via USSD Nigeria by ' + customerMsisdn,
           medium: 'ussd',
           status: 'false',
           severity: 'Critical / High',
-          loc: 'Caller Location Pending',
+          loc: 'Nigeria (Pending Call)',
           phone: customerMsisdn,
           createdAt: new Date().toISOString()
         };
@@ -229,27 +220,23 @@ function handleUssdLogic(sessionId, customerMsisdn, inputStr, contextData) {
         if (lang === 'ha') {
           sosMsg =
             `🚨 AN TURA SAKON GAGGAWA (SOS)!\n` +
-            `An sanar da masu bada agaji don: ${customerMsisdn}\n` +
+            `An sanar da masu bada agaji a Najeriya don: ${customerMsisdn}\n` +
             `Layin Taimako:\n` +
             `- Yan Sanda / Gaggawa: 112\n` +
-            `- Layin Kano: 08000-RIBBONS\n` +
-            `- Mirabel SARC: 08187215396\n` +
+            `- Layin Kano GBV: 08000-RIBBONS\n` +
+            `- Waraka SARC Kano: 08031234567\n` +
+            `- Mirabel SARC Lagos: 08187215396\n` +
             `Kada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.`;
-        } else if (lang === 'hi') {
-          sosMsg =
-            `🚨 आपातकालीन एसओएस सक्रिय!\n` +
-            `सहायता दल को सूचित कर दिया गया है: ${customerMsisdn}\n` +
-            `हेल्पलाइन: 112 / 1091\n` +
-            `सुरक्षित स्थान पर रहें, एजेंट संपर्क कर रहा है।`;
         } else {
           sosMsg =
             `🚨 EMERGENCY SOS ACTIVATED!\n` +
-            `Rapid Response Alerted for: ${customerMsisdn}\n` +
+            `Rapid Response Alerted in Nigeria for: ${customerMsisdn}\n` +
             `Direct Hotlines:\n` +
             `- National Emergency: 112\n` +
-            `- GBV Rapid Response: 08000-RIBBONS\n` +
-            `- Mirabel SARC: 08187215396\n` +
-            `Stay safe. An agent is contacting you now.`;
+            `- Kano GBV Helpline: 08000-RIBBONS\n` +
+            `- Waraka SARC Kano: 08031234567\n` +
+            `- Mirabel SARC Lagos: 08187215396\n` +
+            `Stay safe. A caseworker is contacting you now.`;
         }
 
         return {

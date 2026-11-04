@@ -151,12 +151,12 @@ const AdminRegister = () => {
                     <div className='flex flex-col md:flex-row md:gap-4 w-full'>
                       <TextField
                         onChange={(e) => setName(e.target.value)} margin="normal" required
-                        fullWidth id="name" label="Name (Eg. Humanitarian camp, Maharashtra, India)"
+                        fullWidth id="name" label="Name (Eg. Waraka SARC Center, Kano, Nigeria)"
                         name="name" autoComplete="name" autoFocus
                       />
                       <TextField
                         onChange={(e) => setLocation(e.target.value)} margin="normal" required fullWidth
-                        name="location" label="Location (Eg. Mumbai, India)" id="location" autoComplete="location"
+                        name="location" label="Location (Eg. Kano, Nigeria)" id="location" autoComplete="location"
                       />
                     </div>
                     <div className='flex flex-col md:flex-row md:gap-4'>
