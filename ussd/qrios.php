@@ -3,6 +3,11 @@
  * Ribbons USSD Handler for Qrios Webhook Platform & Telco Gateways
  * Languages: English (1), Hausa (2)
  * Fully tailored for Nigerian contexts and Sexual Assault Referral Centres (SARC)
+ *
+ * Qrios USSD API Specification:
+ * - Request: { sessionId, msisdn, input: { type: "Dial", shortcodeString: "*425*0167#" }, result: { type: "InputResult", value: "..." }, contextData }
+ * - Input View Response: { action: { type: "ShowView", view: { type: "InputView", message: "..." } }, contextData: "..." }
+ * - Info View Response: { action: { type: "ShowView", view: { type: "InfoView", message: "..." } } }
  */
 
 header('Access-Control-Allow-Origin: *');
@@ -23,7 +28,7 @@ $isJson = ($data !== null) || (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVE
 if (!$data) {
     $data = [
         'sessionId' => $_POST['sessionId'] ?? uniqid('sess_', true),
-        'customerMsisdn' => $_POST['phoneNumber'] ?? '+2348000000000',
+        'msisdn' => $_POST['msisdn'] ?? ($_POST['phoneNumber'] ?? '+2348000000000'),
         'input' => [
             'text' => $_POST['text'] ?? ''
         ],
@@ -31,16 +36,29 @@ if (!$data) {
     ];
 }
 
-$sessionId = $data['sessionId'] ?? uniqid('sess_', true);
-$customerMsisdn = $data['customerMsisdn'] ?? ($data['phoneNumber'] ?? '+2348000000000');
+// Acknowledge session abort or close events from Qrios gracefully
+if (isset($data['reason'])) {
+    @file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | EVENT: " . json_encode($data['reason']) . " | Raw: " . substr($rawInput, 0, 300) . "\n", FILE_APPEND);
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(['status' => 'acknowledged', 'message' => 'Event received']);
+    exit();
+}
 
+$sessionId = $data['sessionId'] ?? uniqid('sess_', true);
+$customerMsisdn = $data['msisdn'] ?? ($data['customerMsisdn'] ?? ($data['phoneNumber'] ?? '+2348000000000'));
+
+// Extract user input text from Qrios result, input, or text
 $inputText = '';
-if (isset($data['input'])) {
+if (isset($data['result']) && is_array($data['result'])) {
+    $inputText = $data['result']['value'] ?? '';
+} elseif (isset($data['input'])) {
     if (is_array($data['input'])) {
-        $inputText = $data['input']['text'] ?? ($data['input']['dialString'] ?? '');
+        $inputText = $data['input']['value'] ?? ($data['input']['text'] ?? ($data['input']['dialString'] ?? ($data['input']['shortcodeString'] ?? '')));
     } else {
         $inputText = (string)$data['input'];
     }
+} elseif (isset($data['text'])) {
+    $inputText = (string)$data['text'];
 }
 $input = trim($inputText);
 
@@ -54,7 +72,7 @@ if (!empty($data['contextData'])) {
     }
 }
 
-// Detect initial dial (e.g. *425*0167#, type='Dial', or shortcode string)
+// Detect initial dial (e.g. *425*0167#, input.type='Dial', or shortcode string)
 $isInitialDial = false;
 if (isset($data['input']) && is_array($data['input'])) {
     if (isset($data['input']['type']) && strtolower($data['input']['type']) === 'dial') {
@@ -69,10 +87,10 @@ if ($isInitialDial) {
     $input = '';
 }
 
-// Log incoming Qrios requests for live diagnostics
-@file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | $customerMsisdn | Input: " . json_encode($data['input'] ?? $input) . " | Raw: " . substr($rawInput, 0, 300) . "\n", FILE_APPEND);
+// Log incoming request
+@file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | IN | $customerMsisdn | Input: " . json_encode($data['input'] ?? ($data['result'] ?? $input)) . " | Raw: " . substr($rawInput, 0, 300) . "\n", FILE_APPEND);
 
-// Support Africa's Talking / Telco format text (e.g. "1*2*1")
+// Support Africa's Talking / Telco format text (e.g. "1*2*1") if not JSON
 if (!$isJson && isset($_POST['text']) && empty($context['step'])) {
     $rawText = trim($_POST['text']);
     if ($rawText === '' || $isInitialDial) {
@@ -112,7 +130,7 @@ $responseMessage = '';
 $nextContext = $context;
 $nextContext['phone'] = $customerMsisdn;
 
-// STATE MACHINE
+// STATE MACHINE (Strictly English & Hausa with Nigerian Context)
 if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !== 'support_loc' && $step !== 'report_name')) {
     // 1. Initial Screen: Language Selection (English & Hausa)
     $responseType = 'InputView';
@@ -157,7 +175,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
     switch ($input) {
         case '1': // Emergency SOS
-            $responseType = 'ShowView';
+            $responseType = 'InfoView';
             if ($lang === 'ha') {
                 $responseMessage = "🚨 AN TURA SAKON GAGGAWA (SOS)!\nAn sanar da masu bada agaji a Najeriya don: $customerMsisdn\nLayin Taimako:\n- Yan Sanda / Gaggawa: 112\n- Layin Kano GBV: 08000-RIBBONS\n- Waraka SARC Kano: 08031234567\n- Mirabel SARC Lagos: 08187215396\nKada ki ji tsoro, jami'anmu na kan hanya domin taimaka miki.";
             } else {
@@ -197,7 +215,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
             break;
 
         case '5': // FAQs & 72h PEP Info
-            $responseType = 'ShowView';
+            $responseType = 'InfoView';
             if ($lang === 'ha') {
                 $responseMessage = "ℹ️ BAYANI MAI MUHIMMANCI (AWA 72):\n- Maganin PEP na hana kamuwa da kanjamau idan an sha shi cikin awa 72.\n- Akwai maganin hana ciki na gaggawa.\n- Dukkan ayyukan SARC a Najeriya KYAUTA ne 100%.\n- Kada a yi wanka kafin ganin likita domin kiyaye shaidar bincike.\nKira 112 ko je asibitin SARC mafi kusa nan take.";
             } else {
@@ -222,7 +240,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
         goto finishResponse;
     }
 
-    $responseType = 'ShowView';
+    $responseType = 'InfoView';
     if ($input === '1') { // Kano
         $responseMessage = ($lang === 'ha') 
             ? "📍 Waraka SARC, Asibitin Murtala Muhammad, Kofar Nassarawa, Kano.\nWaya: 08031234567 / 08000-RIBBONS\nKulawar likita, maganin PEP da shawarwari kyauta 24/7."
@@ -272,7 +290,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
 } elseif ($step === 'support_loc') {
     $cat = $context['cat'] ?? 'Support';
-    $responseType = 'ShowView';
+    $responseType = 'InfoView';
     $responseMessage = ($lang === 'ha')
         ? "✅ An karbi bukatarki ta $cat a $input.\nJami'inmu a Najeriya zai tuntube ki a $customerMsisdn cikin cikakken sirri.\nLayin Gaggawa: 112 ko 08000-RIBBONS."
         : "✅ Request received for $cat in $input.\nA Nigerian crisis caseworker will call $customerMsisdn confidentially.\n24/7 Hotline: 112 or 08000-RIBBONS.";
@@ -293,7 +311,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
 } elseif ($step === 'report_name') {
     $ref = 'RB-NG-' . rand(1000, 9999);
-    $responseType = 'ShowView';
+    $responseType = 'InfoView';
     $responseMessage = ($lang === 'ha')
         ? "🛡️ An karbi rahotonki cikin cikakken sirri.\nLambar Shaida: $ref.\nAna kiyaye sirrinki. Idan kina cikin hatsari a Najeriya, kira 112 nan take."
         : "🛡️ Incident report filed securely.\nReference Code: $ref.\nYour confidentiality is strictly protected. If in immediate danger, call 112.";
@@ -301,7 +319,7 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 
 } else {
     // Completed or reset
-    $responseType = 'ShowView';
+    $responseType = 'InfoView';
     $responseMessage = ($lang === 'ha')
         ? "Mun gode da tuntubar Ribbons Najeriya.\nLayin Taimako na Gaggawa: 112."
         : "Thank you for contacting Ribbons Nigeria.\n24/7 Crisis Hotline: 112.";
@@ -309,16 +327,32 @@ if ($step === 'welcome' || (empty($input) && $step !== 'report_desc' && $step !=
 }
 
 finishResponse:
+$isTerminal = ($responseType === 'InfoView' || $responseType === 'ShowView');
+
 if ($isJson) {
     header('Content-Type: application/json; charset=UTF-8');
-    echo json_encode([
-        'type' => $responseType,
-        'message' => $responseMessage,
-        'contextData' => json_encode($nextContext)
-    ]);
+    
+    // Official Qrios USSD Payload Format
+    $qriosPayload = [
+        'action' => [
+            'type' => 'ShowView',
+            'view' => [
+                'type' => $isTerminal ? 'InfoView' : 'InputView',
+                'message' => $responseMessage
+            ]
+        ]
+    ];
+
+    if (!$isTerminal) {
+        $qriosPayload['contextData'] = json_encode($nextContext);
+    }
+
+    $jsonOutput = json_encode($qriosPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    @file_put_contents(__DIR__ . '/qrios_debug.log', date('Y-m-d H:i:s') . " | OUT | Response: " . $jsonOutput . "\n", FILE_APPEND);
+    echo $jsonOutput;
 } else {
     header('Content-Type: text/plain; charset=UTF-8');
-    $prefix = ($responseType === 'InputView') ? 'CON ' : 'END ';
+    $prefix = $isTerminal ? 'END ' : 'CON ';
     echo $prefix . $responseMessage;
 }
 ?>

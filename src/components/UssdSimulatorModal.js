@@ -327,8 +327,10 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
         },
         body: JSON.stringify({
           sessionId: 'sim-' + Date.now(),
+          msisdn: '+2348012345678',
           customerMsisdn: '+2348012345678',
-          input: { type: 'Input', text: input, dialString: dialCode },
+          input: { type: step === 'welcome' ? 'Dial' : 'Input', text: input, shortcodeString: dialCode },
+          result: { type: 'InputResult', value: input },
           contextData: currentContext,
           clientId: 'ORHu1n1k',
           appId: 'A71ISNW3KbkxKJSwbpGCSD1q'
@@ -340,11 +342,13 @@ const UssdSimulatorModal = ({ isOpen, onClose }) => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data && data.message) {
+        const viewMsg = data.action?.view?.message || data.message;
+        const viewType = data.action?.view?.type || data.type;
+        if (viewMsg) {
           setInSession(true);
-          setScreenText(data.message);
+          setScreenText(viewMsg);
           setContextData(data.contextData);
-          setIsTerminal(data.type === 'ShowView');
+          setIsTerminal(viewType === 'InfoView' || viewType === 'ShowView');
           return;
         }
       }
